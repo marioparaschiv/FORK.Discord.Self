@@ -19,8 +19,6 @@ class APIRequest {
 
     this.fullUserAgent = this.client.options.http.headers['User-Agent'];
 
-    this.client.options.ws.properties.browser_user_agent = this.fullUserAgent;
-
     let queryString = '';
     if (options.query) {
       const query = Object.entries(options.query)
