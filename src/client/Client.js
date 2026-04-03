@@ -218,6 +218,14 @@ class Client extends BaseClient {
         this.options.messageSweepInterval * 1_000,
       ).unref();
     }
+
+    if (this.options.sessionStatsInterval > 0) {
+      this.sessionStatsInterval = setInterval(() => {
+        if (this.isReady()) {
+          this.emit(Events.SESSION_STATS, this._buildSessionStats());
+        }
+      }, this.options.sessionStatsInterval).unref();
+    }
   }
 
   /**
@@ -249,6 +257,49 @@ class Client extends BaseClient {
    */
   get uptime() {
     return this.readyAt ? Date.now() - this.readyAt : null;
+  }
+
+  /**
+   * Builds a lightweight snapshot of session state for long-running monitoring.
+   * @returns {SessionStats}
+   * @private
+   */
+  _buildSessionStats() {
+    const memoryUsage = process.memoryUsage();
+    const voiceConnection = this.voice.connection;
+
+    return {
+      timestamp: Date.now(),
+      uptime: this.uptime,
+      memory: {
+        rss: memoryUsage.rss,
+        heapTotal: memoryUsage.heapTotal,
+        heapUsed: memoryUsage.heapUsed,
+        external: memoryUsage.external,
+        arrayBuffers: memoryUsage.arrayBuffers,
+      },
+      caches: {
+        users: this.users.cache.size,
+        guilds: this.guilds.cache.size,
+        channels: this.channels.cache.size,
+        presences: this.presences.cache.size,
+        voiceStates: this.voiceStates.cache.size,
+        relationships: this.relationships.cache.size,
+        notes: this.notes.cache.size,
+        restHandlers: this.rest.handlers.size,
+        wsPacketQueue: this.ws.packetQueue.length,
+      },
+      ws: {
+        status: this.ws.status,
+        statusName: Object.keys(Status).find(key => Status[key] === this.ws.status) ?? 'UNKNOWN',
+        shards: this.ws.shards.size,
+        ping: Number.isFinite(this.ws.ping) ? this.ws.ping : null,
+      },
+      voice: {
+        connected: Boolean(voiceConnection),
+        streamWatchConnections: voiceConnection?.streamWatchConnection.size ?? 0,
+      },
+    };
   }
 
   /**
@@ -353,6 +404,7 @@ class Client extends BaseClient {
     this._cleanups.clear();
 
     if (this.sweepMessageInterval) clearInterval(this.sweepMessageInterval);
+    if (this.sessionStatsInterval) clearInterval(this.sessionStatsInterval);
 
     this.sweepers.destroy();
     this.ws.destroy();
@@ -900,6 +952,9 @@ class Client extends BaseClient {
     if (typeof options.retryLimit !== 'number' || isNaN(options.retryLimit)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'retryLimit', 'a number');
     }
+    if (typeof options.sessionStatsInterval !== 'number' || isNaN(options.sessionStatsInterval)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'sessionStatsInterval', 'a number');
+    }
     if (typeof options.failIfNotExists !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'failIfNotExists', 'a boolean');
     }
@@ -926,6 +981,12 @@ module.exports = Client;
  * Emitted for general warnings.
  * @event Client#warn
  * @param {string} info The warning
+ */
+
+/**
+ * Emitted periodically with lightweight session and memory statistics.
+ * @event Client#sessionStats
+ * @param {SessionStats} stats The current session statistics snapshot
  */
 
 /**

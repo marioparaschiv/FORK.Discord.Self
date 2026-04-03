@@ -350,6 +350,7 @@ exports.VoiceOpcodes = {
  * * WARN: warn
  * * DEBUG: debug
  * * CACHE_SWEEP: cacheSweep
+ * * SESSION_STATS: sessionStats
  * * SHARD_DISCONNECT: shardDisconnect
  * * SHARD_ERROR: shardError
  * * SHARD_RECONNECTING: shardReconnecting
@@ -445,6 +446,7 @@ exports.Events = {
   WARN: 'warn',
   DEBUG: 'debug',
   CACHE_SWEEP: 'cacheSweep',
+  SESSION_STATS: 'sessionStats',
   SHARD_DISCONNECT: 'shardDisconnect',
   SHARD_ERROR: 'shardError',
   SHARD_RECONNECTING: 'shardReconnecting',

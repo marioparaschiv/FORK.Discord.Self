@@ -838,6 +838,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private actions: unknown;
   public authenticator: typeof authenticator;
   private presence: ClientPresence;
+  private _buildSessionStats(): SessionStats;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
   public channels: ChannelManager;
@@ -5876,6 +5877,7 @@ export interface ClientEvents extends BaseClientEvents {
     newAutoModerationRule: AutoModerationRule,
   ];
   cacheSweep: [message: string];
+  sessionStats: [stats: SessionStats];
   channelCreate: [channel: NonThreadGuildBasedChannel];
   channelDelete: [channel: DMChannel | NonThreadGuildBasedChannel];
   channelPinsUpdate: [channel: TextBasedChannel, date: Date];
@@ -6020,6 +6022,7 @@ export interface ClientOptions {
   restGlobalRateLimit?: number;
   restSweepInterval?: number;
   retryLimit?: number;
+  sessionStatsInterval?: number;
   failIfNotExists?: boolean;
   presence?: PresenceData;
   waitGuildTimeout?: number;
@@ -6064,6 +6067,47 @@ export interface CollectorOptions<T extends unknown[]> {
 export interface CollectorResetTimerOptions {
   time?: number;
   idle?: number;
+}
+
+export interface SessionStatsMemory {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+}
+
+export interface SessionStatsCaches {
+  users: number;
+  guilds: number;
+  channels: number;
+  presences: number;
+  voiceStates: number;
+  relationships: number;
+  notes: number;
+  restHandlers: number;
+  wsPacketQueue: number;
+}
+
+export interface SessionStatsWs {
+  status: number;
+  statusName: keyof typeof Status | 'UNKNOWN';
+  shards: number;
+  ping: number | null;
+}
+
+export interface SessionStatsVoice {
+  connected: boolean;
+  streamWatchConnections: number;
+}
+
+export interface SessionStats {
+  timestamp: number;
+  uptime: number | null;
+  memory: SessionStatsMemory;
+  caches: SessionStatsCaches;
+  ws: SessionStatsWs;
+  voice: SessionStatsVoice;
 }
 
 export type ColorResolvable =
@@ -6247,6 +6291,7 @@ export interface ConstantsEvents {
   WARN: 'warn';
   DEBUG: 'debug';
   CACHE_SWEEP: 'cacheSweep';
+  SESSION_STATS: 'sessionStats';
   SHARD_DISCONNECT: 'shardDisconnect';
   SHARD_ERROR: 'shardError';
   SHARD_RECONNECTING: 'shardReconnecting';
