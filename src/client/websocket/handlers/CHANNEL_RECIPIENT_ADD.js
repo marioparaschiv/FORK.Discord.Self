@@ -6,6 +6,7 @@ module.exports = (client, packet, shard) => {
     if (!channel._recipients) channel._recipients = [];
     channel._recipients.push(packet.d.user);
     const user = client.users._add(packet.d.user);
+    client.users.pin(user.id);
     if (shard.status == Status.READY) {
       /**
        * Emitted whenever a recipient is added from a group DM.

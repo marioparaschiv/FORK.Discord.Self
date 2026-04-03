@@ -28,6 +28,8 @@ class GuildMemberManager extends CachedManager {
      * @type {Guild}
      */
     this.guild = guild;
+
+    this._interceptCache(member => this._releaseUserReference(member));
   }
 
   /**
@@ -37,7 +39,24 @@ class GuildMemberManager extends CachedManager {
    */
 
   _add(data, cache = true) {
-    return super._add(data, cache, { id: data.user.id, extras: [this.guild] });
+    const existing = cache ? this.cache.get(data.user.id) : null;
+    const member = super._add(data, cache, { id: data.user.id, extras: [this.guild] });
+
+    if (cache && !existing) {
+      this.client.users.retainGuildMember(data.user.id);
+    }
+
+    return member;
+  }
+
+  _releaseUserReference(member) {
+    this.client.users.releaseGuildMember(member?.id);
+  }
+
+  _releaseUserReferences() {
+    for (const member of this.cache.values()) {
+      this._releaseUserReference(member);
+    }
   }
 
   /**

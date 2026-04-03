@@ -50,6 +50,56 @@ class CachedManager extends DataManager {
     return this._cache;
   }
 
+  _interceptCache(onDelete) {
+    if (typeof onDelete !== 'function' || this.cache.__cacheDeleteIntercepted) return;
+
+    const cache = this.cache;
+    const originalDelete = cache.delete.bind(cache);
+    const originalClear = cache.clear.bind(cache);
+    const originalSweep = typeof cache.sweep === 'function' ? cache.sweep.bind(cache) : null;
+    let suppressDeleteHook = false;
+
+    Object.defineProperty(cache, '__cacheDeleteIntercepted', { value: true });
+
+    cache.delete = key => {
+      const value = cache.get(key);
+      const deleted = originalDelete(key);
+
+      if (deleted && value && !suppressDeleteHook) {
+        onDelete(value, key);
+      }
+
+      return deleted;
+    };
+
+    cache.clear = () => {
+      const entries = [...cache.entries()];
+      const cleared = originalClear();
+
+      for (const [key, value] of entries) {
+        onDelete(value, key);
+      }
+
+      return cleared;
+    };
+
+    if (originalSweep) {
+      cache.sweep = fn => {
+        const entries = [...cache.entries()].filter(([key, value]) => fn(value, key, cache));
+
+        suppressDeleteHook = true;
+        try {
+          return originalSweep(fn);
+        } finally {
+          suppressDeleteHook = false;
+          for (const [key, value] of entries) {
+            onDelete(value, key);
+          }
+        }
+      };
+    }
+  }
+
   _add(data, cache = true, { id, extras = [] } = {}) {
     const existing = this.cache.get(id ?? data.id);
     if (existing) {

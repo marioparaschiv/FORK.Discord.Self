@@ -432,6 +432,26 @@ class Message extends Base {
     }
   }
 
+  _getReferencedUserIds() {
+    const userIds = new Set();
+    const addUser = user => {
+      const userId = user?.id;
+      if (userId && this.client.users.cache.has(userId)) {
+        userIds.add(userId);
+      }
+    };
+
+    addUser(this.author);
+    addUser(this.interaction?.user);
+    addUser(this.mentions?.repliedUser);
+
+    for (const user of this.mentions?.users?.values() ?? []) {
+      addUser(user);
+    }
+
+    return userIds;
+  }
+
   /**
    * Whether or not the structure has been deleted
    * @type {boolean}

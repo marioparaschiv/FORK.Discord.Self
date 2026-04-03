@@ -30,8 +30,25 @@ class GroupDMChannel extends Channel {
     super._patch(data);
 
     if ('recipients' in data && Array.isArray(data.recipients)) {
+      const previousRecipientIds = new Set((this._recipients ?? []).map(recipient => recipient.id));
       this._recipients = data.recipients;
       data.recipients.forEach(u => this.client.users._add(u));
+
+      if (this.client.channels.cache.has(this.id)) {
+        const nextRecipientIds = new Set(data.recipients.map(recipient => recipient.id));
+
+        for (const recipientId of previousRecipientIds) {
+          if (!nextRecipientIds.has(recipientId)) {
+            this.client.users.unpin(recipientId);
+          }
+        }
+
+        for (const recipientId of nextRecipientIds) {
+          if (!previousRecipientIds.has(recipientId)) {
+            this.client.users.pin(recipientId);
+          }
+        }
+      }
     } else {
       this._recipients = [];
     }

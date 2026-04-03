@@ -51,13 +51,30 @@ class ChannelManager extends CachedManager {
       return null;
     }
 
-    if (cache && !allowUnknownGuild) this.cache.set(channel.id, channel);
+    if (cache && !allowUnknownGuild) {
+      this.cache.set(channel.id, channel);
+      if (channel.type === 'DM') {
+        this.client.users.pin(channel.recipient?.id);
+      } else if (channel.type === 'GROUP_DM') {
+        for (const recipient of channel._recipients ?? []) {
+          this.client.users.pin(recipient.id);
+        }
+      }
+    }
 
     return channel;
   }
 
   _remove(id) {
     const channel = this.cache.get(id);
+    channel?.messages?._releaseUserReferences?.();
+    if (channel?.type === 'DM') {
+      this.client.users.unpin(channel.recipient?.id);
+    } else if (channel?.type === 'GROUP_DM') {
+      for (const recipient of channel._recipients ?? []) {
+        this.client.users.unpin(recipient.id);
+      }
+    }
     channel?.guild?.channels.cache.delete(id);
     for (const [code, invite] of channel?.guild?.invites.cache ?? []) {
       if (invite.channelId === id) channel.guild.invites.cache.delete(code);
@@ -65,7 +82,8 @@ class ChannelManager extends CachedManager {
     channel?.parent?.threads?.cache.delete(id);
     this.cache.delete(id);
     if (channel?.threads) {
-      for (const threadId of channel.threads.cache.keys()) {
+      for (const [threadId, thread] of channel.threads.cache) {
+        thread.messages?._releaseUserReferences?.();
         this.cache.delete(threadId);
         channel.guild?.channels.cache.delete(threadId);
       }

@@ -6,6 +6,9 @@ module.exports = (client, { d: data }) => {
   if (data.user) {
     client.users._add(data.user);
   }
+  if (!client.relationships.cache.has(data.id)) {
+    client.users.pin(data.id);
+  }
   client.relationships.cache.set(data.id, data.type);
   client.relationships.friendNicknames.set(data.id, data.nickname);
   client.relationships.sinceCache.set(data.id, new Date(data.since || 0));

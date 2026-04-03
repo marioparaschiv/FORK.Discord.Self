@@ -29,11 +29,20 @@ class DMChannel extends Channel {
     super._patch(data);
 
     if (data.recipients) {
+      const previousRecipientId = this.recipient?.id;
       /**
        * The recipient on the other end of the DM
        * @type {User}
        */
       this.recipient = this.client.users._add(data.recipients[0]);
+      if (this.client.channels.cache.has(this.id)) {
+        if (previousRecipientId && previousRecipientId !== this.recipient.id) {
+          this.client.users.unpin(previousRecipientId);
+        }
+        if (previousRecipientId !== this.recipient.id) {
+          this.client.users.pin(this.recipient.id);
+        }
+      }
     }
 
     if ('last_message_id' in data) {

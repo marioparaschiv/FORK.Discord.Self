@@ -1,5 +1,6 @@
 'use strict';
 
+const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
 const { GuildMember } = require('../structures/GuildMember');
@@ -14,6 +15,11 @@ const User = require('../structures/User');
 class UserManager extends CachedManager {
   constructor(client, iterable) {
     super(client, User, iterable);
+
+    this._messageRefs = new Collection();
+    this._presenceRefs = new Collection();
+    this._guildMemberRefs = new Collection();
+    this._persistentRefs = new Collection();
   }
 
   /**
@@ -130,6 +136,98 @@ class UserManager extends CachedManager {
     if (user instanceof GuildMember) return user.user.id;
     if (user instanceof Message) return user.author.id;
     return super.resolveId(user);
+  }
+
+  retainMessageUsers(userIds) {
+    this._retainMany(this._messageRefs, userIds);
+  }
+
+  releaseMessageUsers(userIds) {
+    this._releaseMany(this._messageRefs, userIds);
+  }
+
+  retainPresence(userId) {
+    this._retain(this._presenceRefs, userId);
+  }
+
+  releasePresence(userId) {
+    this._release(this._presenceRefs, userId);
+  }
+
+  retainGuildMember(userId) {
+    this._retain(this._guildMemberRefs, userId);
+  }
+
+  releaseGuildMember(userId) {
+    this._release(this._guildMemberRefs, userId);
+  }
+
+  pin(userId) {
+    this._retain(this._persistentRefs, userId);
+  }
+
+  unpin(userId) {
+    this._release(this._persistentRefs, userId);
+  }
+
+  _retainMany(store, userIds) {
+    if (!userIds) return;
+
+    for (const userId of userIds) {
+      this._retain(store, userId);
+    }
+  }
+
+  _releaseMany(store, userIds) {
+    if (!userIds) return;
+
+    for (const userId of userIds) {
+      this._release(store, userId);
+    }
+  }
+
+  _retain(store, user) {
+    const userId = this.resolveId(user);
+    if (!userId) return;
+
+    store.set(userId, (store.get(userId) ?? 0) + 1);
+  }
+
+  _release(store, user) {
+    const userId = this.resolveId(user);
+    if (!userId) return;
+
+    const count = store.get(userId);
+    if (!count) {
+      this._sweepIfDisposable(userId);
+      return;
+    }
+
+    if (count <= 1) {
+      store.delete(userId);
+    } else {
+      store.set(userId, count - 1);
+    }
+
+    this._sweepIfDisposable(userId);
+  }
+
+  _hasReferences(userId) {
+    return (
+      (this._messageRefs.get(userId) ?? 0) > 0 ||
+      (this._presenceRefs.get(userId) ?? 0) > 0 ||
+      (this._guildMemberRefs.get(userId) ?? 0) > 0 ||
+      (this._persistentRefs.get(userId) ?? 0) > 0
+    );
+  }
+
+  _sweepIfDisposable(user) {
+    const userId = this.resolveId(user);
+    if (!userId || userId === this.client.user?.id || !this.cache.has(userId) || this._hasReferences(userId)) {
+      return false;
+    }
+
+    return this.cache.delete(userId);
   }
 }
 

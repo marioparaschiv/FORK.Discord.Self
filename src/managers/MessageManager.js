@@ -20,6 +20,8 @@ class MessageManager extends CachedManager {
      * @type {TextBasedChannels}
      */
     this.channel = channel;
+
+    this._interceptCache(message => this._releaseUserReferencesForMessage(message));
   }
 
   /**
@@ -29,7 +31,35 @@ class MessageManager extends CachedManager {
    */
 
   _add(data, cache) {
-    return super._add(data, cache);
+    const existing = cache ? this.cache.get(data.id) : null;
+    const existingUsers = existing?._getReferencedUserIds() ?? null;
+    const message = super._add(data, cache);
+
+    if (!cache) return message;
+
+    const nextUsers = message._getReferencedUserIds();
+
+    if (existingUsers) {
+      const addedUsers = [...nextUsers].filter(userId => !existingUsers.has(userId));
+      const removedUsers = [...existingUsers].filter(userId => !nextUsers.has(userId));
+
+      this.client.users.retainMessageUsers(addedUsers);
+      this.client.users.releaseMessageUsers(removedUsers);
+    } else {
+      this.client.users.retainMessageUsers(nextUsers);
+    }
+
+    return message;
+  }
+
+  _releaseUserReferences() {
+    for (const message of this.cache.values()) {
+      this._releaseUserReferencesForMessage(message);
+    }
+  }
+
+  _releaseUserReferencesForMessage(message) {
+    this.client.users.releaseMessageUsers(message?._getReferencedUserIds());
   }
 
   /**

@@ -10,6 +10,8 @@ const { Presence } = require('../structures/Presence');
 class PresenceManager extends CachedManager {
   constructor(client, iterable) {
     super(client, Presence, iterable);
+
+    this._interceptCache(presence => this._releaseUserReference(presence));
   }
 
   /**
@@ -19,7 +21,24 @@ class PresenceManager extends CachedManager {
    */
 
   _add(data, cache) {
-    return super._add(data, cache, { id: data.user.id });
+    const existing = cache ? this.cache.get(data.user.id) : null;
+    const presence = super._add(data, cache, { id: data.user.id });
+
+    if (cache && !existing) {
+      this.client.users.retainPresence(data.user.id);
+    }
+
+    return presence;
+  }
+
+  _releaseUserReference(presence) {
+    this.client.users.releasePresence(presence?.userId);
+  }
+
+  _releaseUserReferences() {
+    for (const presence of this.cache.values()) {
+      this._releaseUserReference(presence);
+    }
   }
 
   /**

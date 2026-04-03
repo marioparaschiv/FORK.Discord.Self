@@ -5,6 +5,7 @@ module.exports = (client, packet) => {
   if (channel) {
     if (!channel._recipients) channel._recipients = [];
     channel._recipients = channel._recipients.filter(u => u.id !== packet.d.user.id);
+    client.users.unpin(packet.d.user.id);
     /**
      * Emitted whenever a recipient is removed from a group DM.
      * @event Client#channelRecipientRemove

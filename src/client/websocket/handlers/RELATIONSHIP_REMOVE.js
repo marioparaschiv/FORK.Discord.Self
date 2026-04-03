@@ -6,6 +6,7 @@ module.exports = (client, { d: data }) => {
   client.relationships.cache.delete(data.id);
   client.relationships.friendNicknames.delete(data.id);
   client.relationships.sinceCache.delete(data.id);
+  client.users.unpin(data.id);
   /**
    * Emitted when a relationship is removed, relevant to the current user.
    * @event Client#relationshipRemove

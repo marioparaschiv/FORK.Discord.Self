@@ -107,6 +107,9 @@ class RelationshipManager extends BaseManager {
   _setup(users) {
     if (!Array.isArray(users)) return;
     for (const relationShip of users) {
+      if (!this.cache.has(relationShip.id)) {
+        this.client.users.pin(relationShip.id);
+      }
       this.friendNicknames.set(relationShip.id, relationShip.nickname);
       this.cache.set(relationShip.id, relationShip.type);
       this.sinceCache.set(relationShip.id, new Date(relationShip.since || 0));
