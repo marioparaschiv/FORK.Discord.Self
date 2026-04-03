@@ -8154,6 +8154,7 @@ export type WebhookType = keyof typeof WebhookTypes;
 
 export interface WebSocketOptions {
   agent?: Omit<AgentOptions, 'keepAlive'>;
+  capabilities?: number;
   compress?: boolean;
   properties?: WebSocketProperties;
 }
