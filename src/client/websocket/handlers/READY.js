@@ -19,6 +19,7 @@ module.exports = (client, { d: data }, shard) => {
     client.user = new ClientUser(client, data.user);
     client.users.cache.set(client.user.id, client.user);
   }
+  client.users.pin(client.user.id);
 
   for (const private_channel of data.private_channels) {
     client.channels._add(private_channel);
