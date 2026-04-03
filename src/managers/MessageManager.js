@@ -60,6 +60,7 @@ class MessageManager extends CachedManager {
 
   _releaseUserReferencesForMessage(message) {
     this.client.users.releaseMessageUsers(message?._getReferencedUserIds());
+    Util.scheduleManualGC();
   }
 
   /**

@@ -7,6 +7,7 @@ const { GuildMember } = require('../structures/GuildMember');
 const { Message } = require('../structures/Message');
 const ThreadMember = require('../structures/ThreadMember');
 const User = require('../structures/User');
+const Util = require('../util/Util');
 
 /**
  * Manages API methods for users and stores their cache.
@@ -227,7 +228,9 @@ class UserManager extends CachedManager {
       return false;
     }
 
-    return this.cache.delete(userId);
+    const deleted = this.cache.delete(userId);
+    if (deleted) Util.scheduleManualGC();
+    return deleted;
   }
 }
 

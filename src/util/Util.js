@@ -14,6 +14,8 @@ const isObject = d => typeof d === 'object' && d !== null;
 let deprecationEmittedForSplitMessage = false;
 let deprecationEmittedForRemoveMentions = false;
 let deprecationEmittedForResolveAutoArchiveMaxLimit = false;
+let scheduledManualGC = false;
+let manualGCMethod = null;
 
 const TextSortableGroupTypes = ['GUILD_TEXT', 'GUILD_ANNOUCMENT', 'GUILD_FORUM'];
 const VoiceSortableGroupTypes = ['GUILD_VOICE', 'GUILD_STAGE_VOICE'];
@@ -73,10 +75,44 @@ const payloadTypes = [
   },
 ];
 
+function resolveManualGC() {
+  if (manualGCMethod) return manualGCMethod;
+
+  if (typeof globalThis.window?.gc === 'function') {
+    manualGCMethod = globalThis.window.gc.bind(globalThis.window);
+  } else if (typeof globalThis.Bun?.gc === 'function') {
+    manualGCMethod = globalThis.Bun.gc.bind(globalThis.Bun);
+  } else if (typeof globalThis.gc === 'function') {
+    manualGCMethod = globalThis.gc.bind(globalThis);
+  }
+
+  return manualGCMethod;
+}
+
 /**
  * Contains various general-purpose utility methods.
  */
 class Util extends null {
+  /**
+   * Schedules a single manual garbage collection run for the current tick when the runtime exposes one.
+   * @returns {boolean}
+   */
+  static scheduleManualGC() {
+    if (!resolveManualGC()) return false;
+    if (scheduledManualGC) return true;
+
+    scheduledManualGC = true;
+    queueMicrotask(() => {
+      scheduledManualGC = false;
+
+      try {
+        resolveManualGC()?.();
+      } catch {}
+    });
+
+    return true;
+  }
+
   /**
    * Flatten an object. Any properties that are collections will get converted to an array of keys.
    * @param {Object} obj The object to flatten.
