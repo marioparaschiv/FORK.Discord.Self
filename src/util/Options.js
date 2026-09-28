@@ -114,6 +114,8 @@ const Intents = require('./Intents');
  * @property {number} sequence The sequence of the last dispatch received; the gateway replays the ones after it
  * @property {string} resumeURL The `resume_gateway_url` of the session's READY
  * @property {Object} ready The `d` of the session's READY, which fills the cache before resuming
+ * @property {Object[]} [dispatches=[]] The dispatches received after READY that changed the cache, oldest first,
+ * as `{ t, d }`; each runs through its handler after READY, without emitting `raw` or sending anything
  */
 
 /**

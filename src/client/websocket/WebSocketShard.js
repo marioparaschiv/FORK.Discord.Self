@@ -2,7 +2,7 @@
 
 const EventEmitter = require('node:events');
 const { setTimeout, setInterval, clearTimeout } = require('node:timers');
-const { patchCache } = require('./handlers/READY');
+const PacketHandlers = require('./handlers');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
@@ -190,17 +190,34 @@ class WebSocketShard extends EventEmitter {
      * @private
      */
     Object.defineProperty(this, 'seeded', { value: false, writable: true });
+
+    /**
+     * If the cache is being filled from a stored session, during which nothing is sent
+     * @name WebSocketShard#seeding
+     * @type {boolean}
+     * @private
+     */
+    Object.defineProperty(this, 'seeding', { value: false, writable: true });
   }
 
   /**
    * Restores a session an earlier process left open, so that the next identify resumes it.
    * The gateway replays only the dispatches after the sequence, so the READY payload
-   * stored with the session fills the cache first.
+   * stored with the session fills the cache first, and the stored dispatches received
+   * after it bring the cache up to the sequence.
    * @param {ClientSessionOptions} session The session to resume
    * @private
    */
-  seed({ sessionId, sequence, resumeURL, ready }) {
-    patchCache(this.manager.client, ready, this);
+  seed({ sessionId, sequence, resumeURL, ready, dispatches = [] }) {
+    const { client } = this.manager;
+
+    this.seeding = true;
+    try {
+      PacketHandlers.READY.patchCache(client, ready, this);
+      for (const packet of dispatches) PacketHandlers[packet.t]?.(client, packet, this);
+    } finally {
+      this.seeding = false;
+    }
 
     this.sessionId = sessionId;
     this.closeSequence = sequence;
@@ -799,6 +816,11 @@ class WebSocketShard extends EventEmitter {
    * @param {boolean} [important=false] If this packet should be added first in queue
    */
   send(data, important = false) {
+    // What the handlers send while seeding, such as guild subscriptions, the resumed session already holds
+    if (this.seeding) {
+      this.debug(`[SEED] Dropped packet '${JSON.stringify(data)}'.`);
+      return;
+    }
     this.ratelimit.queue[important ? 'unshift' : 'push'](data);
     this.processQueue();
   }

@@ -4050,6 +4050,8 @@ export class WebSocketShard extends EventEmitter {
   private readyTimeout: NodeJS.Timeout | null;
   private closeEmitted: boolean;
   private wsCloseTimeout: NodeJS.Timeout | null;
+  private seeded: boolean;
+  private seeding: boolean;
 
   public manager: WebSocketManager;
   public id: number;
@@ -4063,6 +4065,8 @@ export class WebSocketShard extends EventEmitter {
   private onError(error: ErrorEvent | unknown): void;
   private onClose(event: CloseEvent): void;
   private onPacket(packet: unknown): void;
+  private seed(session: ClientSessionOptions): void;
+  private clearSeededCache(): void;
   private checkReady(): void;
   private setHelloTimeout(time?: number): void;
   private setWsCloseTimeout(time?: number): void;
@@ -6045,6 +6049,7 @@ export interface ClientSessionOptions {
   sequence: number;
   resumeURL: string;
   ready: Record<string, unknown>;
+  dispatches?: { t: string; d: unknown }[];
 }
 
 export type ClientPresenceStatus = 'online' | 'idle' | 'dnd';
