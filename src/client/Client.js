@@ -394,10 +394,18 @@ class Client extends BaseClient {
   }
 
   /**
+   * Options for destroying the client.
+   * @typedef {Object} ClientDestroyOptions
+   * @property {boolean} [resumable=false] Whether to close the gateway connection with a code that keeps
+   * its session resumable, rather than with 1000, which ends the session
+   */
+
+  /**
    * Logs out, terminates the connection to Discord, and destroys the client.
+   * @param {ClientDestroyOptions} [options] Options for destroying the client
    * @returns {void}
    */
-  destroy() {
+  destroy({ resumable = false } = {}) {
     super.destroy();
 
     for (const fn of this._cleanups) fn();
@@ -407,7 +415,7 @@ class Client extends BaseClient {
     if (this.sessionStatsInterval) clearInterval(this.sessionStatsInterval);
 
     this.sweepers.destroy();
-    this.ws.destroy();
+    this.ws.destroy({ closeCode: resumable ? 4_000 : 1_000 });
     this.token = null;
   }
 

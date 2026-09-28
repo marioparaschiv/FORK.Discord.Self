@@ -863,7 +863,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public billing: BillingManager;
   public settings: ClientUserSettingManager;
   public readonly sessionId: If<Ready, string, undefined>;
-  public destroy(): void;
+  public destroy(options?: ClientDestroyOptions): void;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
   public fetchGuildTemplate(template: GuildTemplateResolvable): Promise<GuildTemplate>;
@@ -4019,7 +4019,7 @@ export class WebSocketManager extends EventEmitter {
   private createShards(): Promise<void>;
   private reconnect(): Promise<void>;
   public broadcast(packet: unknown): void;
-  private destroy(): void;
+  private destroy(options?: { closeCode?: number }): void;
   private handlePacket(packet?: unknown, shard?: WebSocketShard): boolean;
   private checkShardsReady(): void;
   private triggerClientReady(): void;
@@ -6001,6 +6001,10 @@ export interface ClientEvents extends BaseClientEvents {
 
 export interface ClientFetchInviteOptions {
   guildScheduledEventId?: Snowflake;
+}
+
+export interface ClientDestroyOptions {
+  resumable?: boolean;
 }
 
 export type CaptchaSolver = (captcha: Captcha, UserAgent: string) => Promise<string>;

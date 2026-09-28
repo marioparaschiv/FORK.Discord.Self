@@ -189,7 +189,7 @@ class WebSocketManager extends EventEmitter {
       });
 
       shard.on(ShardEvents.CLOSE, event => {
-        if (event.code === 1_000 ? this.destroyed : UNRECOVERABLE_CLOSE_CODES.includes(event.code)) {
+        if (this.destroyed || UNRECOVERABLE_CLOSE_CODES.includes(event.code)) {
           /**
            * Emitted when a shard's WebSocket disconnects and will no longer reconnect.
            * @event Client#shardDisconnect
@@ -309,14 +309,16 @@ class WebSocketManager extends EventEmitter {
 
   /**
    * Destroys this manager and all its shards.
+   * @param {Object} [options] Options for destroying the manager
+   * @param {number} [options.closeCode=1000] The code to close each shard's connection with
    * @private
    */
-  destroy() {
+  destroy({ closeCode = 1_000 } = {}) {
     if (this.destroyed) return;
     this.debug(`Manager was destroyed. Called by:\n${new Error('MANAGER_DESTROYED').stack}`);
     this.destroyed = true;
     this.shardQueue.clear();
-    for (const shard of this.shards.values()) shard.destroy({ closeCode: 1_000, reset: true, emit: false, log: false });
+    for (const shard of this.shards.values()) shard.destroy({ closeCode, reset: true, emit: false, log: false });
   }
 
   /**
