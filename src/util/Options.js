@@ -102,6 +102,18 @@ const Intents = require('./Intents');
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
  * @property {WebsocketOptions} [ws] Options for the WebSocket
  * @property {HTTPOptions} [http] HTTP options
+ * @property {ClientSessionOptions} [session] A gateway session to resume on login instead of identifying anew
+ */
+
+/**
+ * A gateway session an earlier process left open. Close it with `client.destroy({ resumable: true })`
+ * to keep it resumable. If the gateway invalidates it, the client identifies anew and rebuilds its cache
+ * from the new READY.
+ * @typedef {Object} ClientSessionOptions
+ * @property {string} sessionId The `session_id` of the session's READY
+ * @property {number} sequence The sequence of the last dispatch received; the gateway replays the ones after it
+ * @property {string} resumeURL The `resume_gateway_url` of the session's READY
+ * @property {Object} ready The `d` of the session's READY, which fills the cache before resuming
  */
 
 /**

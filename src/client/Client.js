@@ -972,6 +972,9 @@ class Client extends BaseClient {
     ) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'rejectOnRateLimit', 'an array or a function');
     }
+    if (typeof options.session !== 'undefined' && (typeof options.session !== 'object' || options.session === null)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'session', 'an object');
+    }
     if (typeof options.TOTPKey === 'string') {
       // Convert to base32 if not already
       options.TOTPKey = options.TOTPKey.replace(/ +/g, '').toUpperCase();

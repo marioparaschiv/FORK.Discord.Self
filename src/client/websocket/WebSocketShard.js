@@ -2,6 +2,7 @@
 
 const EventEmitter = require('node:events');
 const { setTimeout, setInterval, clearTimeout } = require('node:timers');
+const { patchCache } = require('./handlers/READY');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
@@ -181,6 +182,32 @@ class WebSocketShard extends EventEmitter {
      * @private
      */
     Object.defineProperty(this, 'connectedAt', { value: 0, writable: true });
+
+    /**
+     * If the cache was filled from a stored READY payload that no RESUMED has confirmed yet
+     * @name WebSocketShard#seeded
+     * @type {boolean}
+     * @private
+     */
+    Object.defineProperty(this, 'seeded', { value: false, writable: true });
+  }
+
+  /**
+   * Restores a session an earlier process left open, so that the next identify resumes it.
+   * The gateway replays only the dispatches after the sequence, so the READY payload
+   * stored with the session fills the cache first.
+   * @param {ClientSessionOptions} session The session to resume
+   * @private
+   */
+  seed({ sessionId, sequence, resumeURL, ready }) {
+    patchCache(this.manager.client, ready, this);
+
+    this.sessionId = sessionId;
+    this.closeSequence = sequence;
+    this.resumeURL = resumeURL;
+    this.expectedGuilds = new Set();
+    this.seeded = true;
+    this.debug(`[SEED] Session ${sessionId} | Sequence ${sequence} | Resume url ${resumeURL}.`);
   }
 
   /**
@@ -448,10 +475,13 @@ class WebSocketShard extends EventEmitter {
         this.emit(ShardEvents.RESUMED);
 
         this.status = Status.READY;
+        this.seeded = false;
         const replayed = packet.s - this.closeSequence;
         this.debug(`[RESUMED] Session ${this.sessionId} | Replayed ${replayed} events.`);
         this.lastHeartbeatAcked = true;
         this.sendHeartbeat('ResumeHeartbeat');
+        // A session resumed from a seeded cache never received READY, so the client becomes ready here
+        if (this.manager.status !== Status.READY) this.checkReady();
         break;
       }
     }
@@ -479,6 +509,8 @@ class WebSocketShard extends EventEmitter {
         this.sequence = -1;
         // Reset the session id as it's invalid
         this.sessionId = null;
+        // A seeded cache is rebuilt from the READY of the new session
+        if (this.seeded) this.clearSeededCache();
         // Set the status to reconnecting
         this.status = Status.RECONNECTING;
         // Finally, emit the INVALID_SESSION event
@@ -501,6 +533,18 @@ class WebSocketShard extends EventEmitter {
           this.checkReady();
         }
     }
+  }
+
+  /**
+   * Clears what a stored READY payload filled the cache with.
+   * @private
+   */
+  clearSeededCache() {
+    const { client } = this.manager;
+    this.seeded = false;
+    client.guilds.cache.clear();
+    client.channels.cache.clear();
+    client.relationships.cache.clear();
   }
 
   /**

@@ -158,6 +158,13 @@ class WebSocketManager extends EventEmitter {
     this.debug(`Spawning shards: ${shards.join(', ')}`);
     this.shardQueue = new Set(shards.map(id => new WebSocketShard(this, id)));
 
+    const { session } = this.client.options;
+    if (session) {
+      // A user account connects with a single shard
+      const [shard] = this.shardQueue;
+      shard.seed(session);
+    }
+
     return this.createShards();
   }
 
@@ -167,8 +174,8 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   async createShards() {
-    // If we don't have any shards to handle, return
-    if (!this.shardQueue.size) return false;
+    // If we don't have any shards to handle, or were destroyed while waiting, return
+    if (!this.shardQueue.size || this.destroyed) return false;
 
     const [shard] = this.shardQueue;
 

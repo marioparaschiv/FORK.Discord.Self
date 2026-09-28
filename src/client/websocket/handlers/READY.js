@@ -5,10 +5,14 @@ const { Opcodes } = require('../../../util/Constants');
 
 let ClientUser;
 
-module.exports = (client, { d: data }, shard) => {
-  // Check
-  USER_REQUIRED_ACTION(client, { d: data });
-
+/**
+ * Fills the client's cache from a READY payload, without sending anything to the gateway or emitting any event.
+ * @param {Client} client The client
+ * @param {Object} data The READY payload
+ * @param {WebSocketShard} shard The shard the payload was received on
+ * @private
+ */
+function patchCache(client, data, shard) {
   // Overwrite ClientPresence
   client.presence.userId = data.user.id;
 
@@ -46,6 +50,13 @@ module.exports = (client, { d: data }, shard) => {
   }
   // Todo: data.auth_session_id_hash
   client.sessions.currentSessionIdHash = data.auth_session_id_hash;
+}
+
+module.exports = (client, { d: data }, shard) => {
+  // Check
+  USER_REQUIRED_ACTION(client, { d: data });
+
+  patchCache(client, data, shard);
 
   if (data.guilds.length) {
     if (data.guilds.length > 80) {
@@ -120,3 +131,5 @@ module.exports = (client, { d: data }, shard) => {
     }),
   ).then(() => shard.checkReady());
 };
+
+module.exports.patchCache = patchCache;

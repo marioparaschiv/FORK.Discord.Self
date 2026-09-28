@@ -6037,6 +6037,14 @@ export interface ClientOptions {
   http?: HTTPOptions;
   rejectOnRateLimit?: string[] | ((data: RateLimitData) => boolean | Promise<boolean>);
   TOTPKey?: string;
+  session?: ClientSessionOptions;
+}
+
+export interface ClientSessionOptions {
+  sessionId: string;
+  sequence: number;
+  resumeURL: string;
+  ready: Record<string, unknown>;
 }
 
 export type ClientPresenceStatus = 'online' | 'idle' | 'dnd';
