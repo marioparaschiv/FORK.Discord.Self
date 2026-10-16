@@ -477,6 +477,9 @@ class WebSocketShard extends EventEmitter {
       return;
     }
 
+    // Before the READY and RESUMED heartbeats, which carry the sequence of the packet that triggered them
+    if (packet.s > this.sequence) this.sequence = packet.s;
+
     switch (packet.t) {
       case WSEvents.READY:
         /**
@@ -511,8 +514,6 @@ class WebSocketShard extends EventEmitter {
         break;
       }
     }
-
-    if (packet.s > this.sequence) this.sequence = packet.s;
 
     switch (packet.op) {
       case Opcodes.HELLO:
