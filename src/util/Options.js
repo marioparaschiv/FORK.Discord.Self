@@ -103,6 +103,21 @@ const Intents = require('./Intents');
  * @property {WebsocketOptions} [ws] Options for the WebSocket
  * @property {HTTPOptions} [http] HTTP options
  * @property {ClientSessionOptions} [session] A gateway session to resume on login instead of identifying anew
+ * @property {QosHeartbeatOptions} [qosHeartbeat] Heartbeat with opcode 40 and a QoS state, like the desktop client,
+ * instead of opcode 1
+ */
+
+/**
+ * @typedef {Object} QosHeartbeatOptions
+ * @property {number} [ver=31] The QoS version to report
+ */
+
+/**
+ * The QoS state a shard reports with each heartbeat
+ * @typedef {Object} QosHeartbeat
+ * @property {boolean} active Whether the client is active
+ * @property {number} ver The QoS version
+ * @property {string[]} reasons Why the client is active (e.g. `foregrounded`)
  */
 
 /**

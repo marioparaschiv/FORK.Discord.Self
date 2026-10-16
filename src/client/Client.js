@@ -975,6 +975,15 @@ class Client extends BaseClient {
     if (typeof options.session !== 'undefined' && (typeof options.session !== 'object' || options.session === null)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'session', 'an object');
     }
+    if (
+      typeof options.qosHeartbeat !== 'undefined' &&
+      (typeof options.qosHeartbeat !== 'object' || options.qosHeartbeat === null)
+    ) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'qosHeartbeat', 'an object');
+    }
+    if (typeof options.qosHeartbeat?.ver !== 'undefined' && typeof options.qosHeartbeat.ver !== 'number') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'qosHeartbeat.ver', 'a number');
+    }
     if (typeof options.TOTPKey === 'string') {
       // Convert to base32 if not already
       options.TOTPKey = options.TOTPKey.replace(/ +/g, '').toUpperCase();

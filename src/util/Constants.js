@@ -221,6 +221,7 @@ exports.VoiceStatus = {
  * * SEARCH_RECENT_MEMBERS: 35 => ~ Opcode 8 (Member Safety)
  * * REQUEST_CHANNEL_STATUSES: 36 => Request Voice Channel status.
  * * GUILD_SUBSCRIPTIONS_BULK: 37 => ~ Opcode 14
+ * * QOS_HEARTBEAT: 40 => ~ Opcode 1, with the client's QoS state
  * @typedef {Object<string, number>} Opcodes
  */
 exports.Opcodes = {
@@ -261,6 +262,7 @@ exports.Opcodes = {
   SEARCH_RECENT_MEMBERS: 35, // Payload: { guild_id: string, query: string, continuation_token?: Snowflake }
   REQUEST_CHANNEL_STATUSES: 36, // Payload: { guild_id: string } | Response: CHANNEL_STATUSES | { guild_id, channels: { status, id }[] }
   GUILD_SUBSCRIPTIONS_BULK: 37, // Payload: { subscriptions: Object<guild_id, { Payload_op14 - guild_id }> } | Response: Opcode 14
+  QOS_HEARTBEAT: 40, // Payload: { seq: number, qos: { active: boolean, ver: number, reasons: string[] } }
   // Updated: 23/1/2024
 };
 

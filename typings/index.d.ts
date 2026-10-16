@@ -4057,6 +4057,7 @@ export class WebSocketShard extends EventEmitter {
   public id: number;
   public status: Status;
   public ping: number;
+  public qos: QosHeartbeat | null;
 
   private debug(message: string): void;
   private connect(): Promise<void>;
@@ -6042,6 +6043,17 @@ export interface ClientOptions {
   rejectOnRateLimit?: string[] | ((data: RateLimitData) => boolean | Promise<boolean>);
   TOTPKey?: string;
   session?: ClientSessionOptions;
+  qosHeartbeat?: QosHeartbeatOptions;
+}
+
+export interface QosHeartbeatOptions {
+  ver?: number;
+}
+
+export interface QosHeartbeat {
+  active: boolean;
+  ver: number;
+  reasons: string[];
 }
 
 export interface ClientSessionOptions {
@@ -6401,6 +6413,7 @@ export interface ConstantsOpcodes {
   SEARCH_RECENT_MEMBERS: 35;
   REQUEST_CHANNEL_STATUSES: 36;
   GUILD_SUBSCRIPTIONS_BULK: 37;
+  QOS_HEARTBEAT: 40;
 }
 
 export interface ConstantsShardEvents {

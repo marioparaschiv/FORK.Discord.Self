@@ -91,6 +91,15 @@ class WebSocketShard extends EventEmitter {
      */
     this.lastHeartbeatAcked = true;
 
+    const { qosHeartbeat } = manager.client.options;
+
+    /**
+     * The QoS state sent with each heartbeat, or `null` when heartbeats use opcode 1.
+     * Change `active` and `reasons` to update what the next heartbeat reports
+     * @type {?QosHeartbeat}
+     */
+    this.qos = qosHeartbeat ? { active: false, ver: qosHeartbeat.ver ?? 31, reasons: [] } : null;
+
     /**
      * Used to prevent calling {@link WebSocketShard#event:close} twice while closing or terminating the WebSocket.
      * @type {boolean}
@@ -726,7 +735,12 @@ class WebSocketShard extends EventEmitter {
     this.debug(`[${tag}] Sending a heartbeat.`);
     this.lastHeartbeatAcked = false;
     this.lastPingTimestamp = Date.now();
-    this.send({ op: Opcodes.HEARTBEAT, d: this.sequence }, true);
+    this.send(
+      this.qos
+        ? { op: Opcodes.QOS_HEARTBEAT, d: { seq: this.sequence, qos: this.qos } }
+        : { op: Opcodes.HEARTBEAT, d: this.sequence },
+      true,
+    );
   }
 
   /**
