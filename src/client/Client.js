@@ -942,6 +942,9 @@ class Client extends BaseClient {
     if (typeof options.DMChannelVoiceStatusSync !== 'number' || isNaN(options.DMChannelVoiceStatusSync)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMChannelVoiceStatusSync', 'a number');
     }
+    if (typeof options.guildSubscriptions !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'guildSubscriptions', 'a boolean');
+    }
     if (typeof options.waitGuildTimeout !== 'number' || isNaN(options.waitGuildTimeout)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'waitGuildTimeout', 'a number');
     }

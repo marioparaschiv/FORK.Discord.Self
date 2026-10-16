@@ -58,7 +58,7 @@ module.exports = (client, { d: data }, shard) => {
 
   patchCache(client, data, shard);
 
-  if (data.guilds.length) {
+  if (client.options.guildSubscriptions && data.guilds.length) {
     if (data.guilds.length > 80) {
       // Split data bc 15kb
       const data1 = data.guilds.slice(0, Math.floor(data.guilds.length / 2));

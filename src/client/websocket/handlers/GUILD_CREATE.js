@@ -3,6 +3,7 @@
 const { Events, Opcodes, Status } = require('../../../util/Constants');
 
 const run = (client, guild) => {
+  if (!client.options.guildSubscriptions) return;
   const subs = {};
   subs[guild.id] = {
     typing: true,

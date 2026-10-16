@@ -51,6 +51,9 @@ const Intents = require('./Intents');
  * Options for a client.
  * @typedef {Object} ClientOptions
  * @property {number} [DMChannelVoiceStatusSync=0] The amount of time in milliseconds that the Client to register the event with each DM channel (0=Disable)
+ * @property {boolean} [guildSubscriptions=true] Whether to subscribe to every guild's typing, presence, thread and
+ * member events on READY and GUILD_CREATE; the desktop client only subscribes to the guild it shows,
+ * see {@link Guild#subscribe}
  * @property {number} [captchaRetryLimit=3] Captcha retry limit
  * @property {CaptchaSolver} [captchaSolver] Captcha Solver
  * @property {string} [TOTPKey] TOTP key / 2FA Key for two-factor authentication
@@ -196,6 +199,7 @@ class Options extends null {
   static createDefault() {
     return {
       DMChannelVoiceStatusSync: 0,
+      guildSubscriptions: true,
       captchaRetryLimit: 3,
       captchaSolver: () => {
         const err = new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED');

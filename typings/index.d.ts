@@ -1616,6 +1616,7 @@ export class Guild extends AnonymousGuild {
   public fetchVanityData(): Promise<Vanity>;
   public fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   public fetchWelcomeScreen(): Promise<WelcomeScreen>;
+  public subscribe(options?: GuildSubscriptionOptions): void;
   public fetchWidget(): Promise<Widget>;
   public fetchWidgetSettings(): Promise<GuildWidgetSettings>;
   public leave(): Promise<Guild>;
@@ -6016,6 +6017,7 @@ export type CaptchaSolver = (captcha: Captcha, UserAgent: string) => Promise<str
 
 export interface ClientOptions {
   DMChannelVoiceStatusSync?: number;
+  guildSubscriptions?: boolean;
   captchaRetryLimit?: number;
   captchaSolver?: CaptchaSolver;
   closeTimeout?: number;
@@ -6044,6 +6046,14 @@ export interface ClientOptions {
   TOTPKey?: string;
   session?: ClientSessionOptions;
   qosHeartbeat?: QosHeartbeatOptions;
+}
+
+export interface GuildSubscriptionOptions {
+  typing?: boolean;
+  activities?: boolean;
+  threads?: boolean;
+  memberUpdates?: boolean;
+  channels?: Record<Snowflake, [number, number][]>;
 }
 
 export interface QosHeartbeatOptions {

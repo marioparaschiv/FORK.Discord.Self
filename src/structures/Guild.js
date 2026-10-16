@@ -30,6 +30,7 @@ const {
   ExplicitContentFilterLevels,
   Status,
   MFALevels,
+  Opcodes,
   PremiumTiers,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
@@ -1576,6 +1577,34 @@ class Guild extends AnonymousGuild {
     this.vanityURLUses = data.uses;
 
     return data;
+  }
+
+  /**
+   * Options for subscribing to a guild's events
+   * @typedef {Object} GuildSubscriptionOptions
+   * @property {boolean} [typing=true] Whether to receive typing events
+   * @property {boolean} [activities=true] Whether to receive the presences of other members
+   * @property {boolean} [threads=true] Whether to receive thread list and thread member events
+   * @property {boolean} [memberUpdates=false] Whether to receive member updates of other members
+   * @property {Object<Snowflake, Array<Array<number>>>} [channels={}] Member list ranges to receive per channel,
+   * e.g. `{ [channelId]: [[0, 99]] }`
+   */
+
+  /**
+   * Subscribes to this guild's events, as the client does for the guild it shows.
+   * Subscriptions replace any earlier one for the guild and end with the gateway session.
+   * @param {GuildSubscriptionOptions} [options={}] What to subscribe to
+   * @returns {void}
+   */
+  subscribe({ typing = true, activities = true, threads = true, memberUpdates = false, channels = {} } = {}) {
+    this.shard.send({
+      op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
+      d: {
+        subscriptions: {
+          [this.id]: { typing, activities, threads, ...(memberUpdates && { member_updates: true }), channels },
+        },
+      },
+    });
   }
 
   /**
