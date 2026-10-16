@@ -2,6 +2,7 @@
 
 const handlers = Object.fromEntries([
   ['READY', require('./READY')],
+  ['READY_SUPPLEMENTAL', require('./READY_SUPPLEMENTAL')],
   ['RESUMED', require('./RESUMED')],
   ['APPLICATION_COMMAND_CREATE', require('./APPLICATION_COMMAND_CREATE')],
   ['APPLICATION_COMMAND_DELETE', require('./APPLICATION_COMMAND_DELETE')],
@@ -36,6 +37,7 @@ const handlers = Object.fromEntries([
   ['MESSAGE_UPDATE', require('./MESSAGE_UPDATE')],
   ['MESSAGE_DELETE_BULK', require('./MESSAGE_DELETE_BULK')],
   ['MESSAGE_REACTION_ADD', require('./MESSAGE_REACTION_ADD')],
+  ['MESSAGE_REACTION_ADD_MANY', require('./MESSAGE_REACTION_ADD_MANY')],
   ['MESSAGE_REACTION_REMOVE', require('./MESSAGE_REACTION_REMOVE')],
   ['MESSAGE_REACTION_REMOVE_ALL', require('./MESSAGE_REACTION_REMOVE_ALL')],
   ['MESSAGE_REACTION_REMOVE_EMOJI', require('./MESSAGE_REACTION_REMOVE_EMOJI')],
@@ -79,6 +81,7 @@ const handlers = Object.fromEntries([
   ['VOICE_CHANNEL_STATUS_UPDATE', require('./VOICE_CHANNEL_STATUS_UPDATE')],
   ['MESSAGE_POLL_VOTE_ADD', require('./MESSAGE_POLL_VOTE_ADD')],
   ['MESSAGE_POLL_VOTE_REMOVE', require('./MESSAGE_POLL_VOTE_REMOVE')],
+  ['PASSIVE_UPDATE_V2', require('./PASSIVE_UPDATE_V2')],
 ]);
 
 module.exports = handlers;

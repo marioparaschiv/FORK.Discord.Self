@@ -1287,7 +1287,7 @@ export interface CollectorEventTypes<K, V, F extends unknown[] = []> {
   end: [collected: Collection<K, V>, reason: string];
 }
 
-export type ChannelFlagsString = 'PINNED' | 'REQUIRE_TAG';
+export type ChannelFlagsString = 'PINNED' | 'REQUIRE_TAG' | 'OBFUSCATED';
 export class ChannelFlags extends BitField<ChannelFlagsString> {
   public static FLAGS: Record<ChannelFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<ChannelFlagsString, number>): number;
@@ -1535,6 +1535,11 @@ export class Emoji extends Base {
   public readonly url: string | null;
   public toJSON(): unknown;
   public toString(): string;
+}
+
+export class GatewayCapabilities extends BitField<GatewayCapabilitiesString> {
+  public static FLAGS: Record<GatewayCapabilitiesString, number>;
+  public static resolve(bit?: BitFieldResolvable<GatewayCapabilitiesString, number>): number;
 }
 
 export class Guild extends AnonymousGuild {
@@ -4011,6 +4016,7 @@ export class WebSocketManager extends EventEmitter {
   public shards: Collection<number, WebSocketShard>;
   public status: Status;
   public readonly ping: number;
+  public readonly capabilities: Readonly<GatewayCapabilities>;
 
   public on(event: WSEventType, listener: (data: any, shardId: number) => void): this;
   public once(event: WSEventType, listener: (data: any, shardId: number) => void): this;
@@ -4033,6 +4039,7 @@ export interface WebSocketShardEvents {
   destroyed: [];
   close: [event: CloseEvent];
   allReady: [unavailableGuilds?: Set<Snowflake>];
+  readySupplemental: [];
 }
 
 export class WebSocketShard extends EventEmitter {
@@ -6433,6 +6440,7 @@ export interface ConstantsShardEvents {
   READY: 'ready';
   RESUMED: 'resumed';
   ALL_READY: 'allReady';
+  READY_SUPPLEMENTAL: 'readySupplemental';
 }
 
 export interface ConstantsStatus {
@@ -7013,6 +7021,27 @@ export interface GuildMemberEditData {
   banner?: BufferResolvable | Base64Resolvable | null;
   bio?: string | null;
 }
+
+export type GatewayCapabilitiesString =
+  | 'LAZY_USER_NOTES'
+  | 'NO_AFFINE_USER_IDS'
+  | 'VERSIONED_READ_STATES'
+  | 'VERSIONED_USER_GUILD_SETTINGS'
+  | 'DEDUPE_USER_OBJECTS'
+  | 'PRIORITIZED_READY_PAYLOAD'
+  | 'MULTIPLE_GUILD_EXPERIMENT_POPULATIONS'
+  | 'NON_CHANNEL_READ_STATES'
+  | 'AUTH_TOKEN_REFRESH'
+  | 'USER_SETTINGS_PROTO'
+  | 'CLIENT_STATE_V2'
+  | 'PASSIVE_GUILD_UPDATE'
+  | 'AUTO_CALL_CONNECT'
+  | 'DEBOUNCE_MESSAGE_REACTIONS'
+  | 'PASSIVE_GUILD_UPDATE_V2'
+  | 'CHANNEL_OBFUSCATION'
+  | 'AUTO_LOBBY_CONNECT';
+
+export type GatewayCapabilitiesResolvable = BitFieldResolvable<GatewayCapabilitiesString, number>;
 
 export type GuildMemberFlagsString =
   | 'DID_REJOIN'
@@ -8246,6 +8275,7 @@ export interface WelcomeScreenEditData {
 
 export type WSEventType =
   | 'READY'
+  | 'READY_SUPPLEMENTAL'
   | 'RESUMED'
   | 'APPLICATION_COMMAND_CREATE'
   | 'APPLICATION_COMMAND_DELETE'

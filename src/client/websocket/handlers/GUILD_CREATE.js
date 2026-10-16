@@ -1,5 +1,6 @@
 'use strict';
 
+const { withProperties } = require('./READY');
 const { Events, Opcodes, Status } = require('../../../util/Constants');
 
 const run = (client, guild) => {
@@ -22,7 +23,8 @@ const run = (client, guild) => {
   });
 };
 
-module.exports = (client, { d: data }, shard) => {
+module.exports = (client, { d }, shard) => {
+  const data = client.ws.capabilities.has('CLIENT_STATE_V2') ? withProperties(d) : d;
   let guild = client.guilds.cache.get(data.id);
   run(client, data);
   if (guild) {

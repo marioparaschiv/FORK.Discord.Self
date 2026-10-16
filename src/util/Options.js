@@ -133,7 +133,9 @@ const Intents = require('./Intents');
  * @property {string} resumeURL The `resume_gateway_url` of the session's READY
  * @property {Object} ready The `d` of the session's READY, which fills the cache before resuming
  * @property {Object[]} [dispatches=[]] The dispatches received after READY that changed the cache, oldest first,
- * as `{ t, d }`; each runs through its handler after READY, without emitting `raw` or sending anything
+ * as `{ t, d }`; each runs through its handler after READY, without emitting `raw` or sending anything. With the
+ * `PRIORITIZED_READY_PAYLOAD` capability this must include the session's READY_SUPPLEMENTAL. The session's dispatches
+ * are shaped by the capabilities it identified with, so `ws.capabilities` must not change while a session is stored
  */
 
 /**

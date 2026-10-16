@@ -220,6 +220,15 @@ class WebSocketShard extends EventEmitter {
   seed({ sessionId, sequence, resumeURL, ready, dispatches = [] }) {
     const { client } = this.manager;
 
+    if (
+      client.ws.capabilities.has(['PRIORITIZED_READY_PAYLOAD', 'DEDUPE_USER_OBJECTS']) &&
+      !dispatches.some(packet => packet.t === WSEvents.READY_SUPPLEMENTAL)
+    ) {
+      this.debug(
+        '[SEED] No READY_SUPPLEMENTAL among the stored dispatches; unless the gateway replays it, the members, presences and voice states it carries stay missing.',
+      );
+    }
+
     this.seeding = true;
     try {
       PacketHandlers.READY.patchCache(client, ready, this);

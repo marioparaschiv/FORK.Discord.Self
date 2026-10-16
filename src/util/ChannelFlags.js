@@ -12,12 +12,14 @@ class ChannelFlags extends BitField {}
  * Numeric guild channel flags. All available properties:
  * * `PINNED`
  * * `REQUIRE_TAG`
+ * * `OBFUSCATED`
  * @type {Object}
- * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-channel-flags}
+ * @see {@link https://docs.discord.food/resources/channel#channel-flags}
  */
 ChannelFlags.FLAGS = {
   PINNED: 1 << 1,
   REQUIRE_TAG: 1 << 4,
+  OBFUSCATED: 1 << 17,
 };
 
 /**

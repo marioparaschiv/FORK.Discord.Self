@@ -9,9 +9,11 @@ const WebSocketShard = require('./WebSocketShard');
 const PacketHandlers = require('./handlers');
 const { Error } = require('../../errors');
 const { Events, ShardEvents, Status, WSCodes, WSEvents } = require('../../util/Constants');
+const GatewayCapabilities = require('../../util/GatewayCapabilities');
 
 const BeforeReadyWhitelist = [
   WSEvents.READY,
+  WSEvents.READY_SUPPLEMENTAL,
   WSEvents.RESUMED,
   WSEvents.GUILD_CREATE,
   WSEvents.GUILD_DELETE,
@@ -109,6 +111,15 @@ class WebSocketManager extends EventEmitter {
   get ping() {
     const sum = this.shards.reduce((a, b) => a + b.ping, 0);
     return sum / this.shards.size;
+  }
+
+  /**
+   * The gateway capabilities sent when identifying, which decide the shape of the dispatches received
+   * @type {Readonly<GatewayCapabilities>}
+   * @readonly
+   */
+  get capabilities() {
+    return new GatewayCapabilities(this.client.options.ws.capabilities).freeze();
   }
 
   /**

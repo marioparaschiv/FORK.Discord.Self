@@ -503,6 +503,7 @@ exports.ShardEvents = {
   READY: 'ready',
   RESUMED: 'resumed',
   ALL_READY: 'allReady',
+  READY_SUPPLEMENTAL: 'readySupplemental',
 };
 
 /**
@@ -522,6 +523,7 @@ exports.PartialTypes = keyMirror(['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 
 /**
  * The type of a WebSocket message event, e.g. `MESSAGE_CREATE`. Here are the available events:
  * * READY
+ * * READY_SUPPLEMENTAL
  * * RESUMED
  * * APPLICATION_COMMAND_CREATE (deprecated)
  * * APPLICATION_COMMAND_DELETE (deprecated)
@@ -586,6 +588,7 @@ exports.PartialTypes = keyMirror(['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 
  */
 exports.WSEvents = keyMirror([
   'READY',
+  'READY_SUPPLEMENTAL',
   'RESUMED',
   'APPLICATION_COMMAND_CREATE',
   'APPLICATION_COMMAND_DELETE',
