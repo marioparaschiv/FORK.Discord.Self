@@ -164,7 +164,9 @@ const Intents = require('./Intents');
  * @property {string} [cdn='https://cdn.discordapp.com'] Base URL of the CDN
  * @property {string} [invite='https://discord.gg'] Base URL of invites
  * @property {string} [template='https://discord.new'] Base URL of templates
- * @property {Object} [headers] Additional headers to send for all API requests
+ * @property {Object} [headers] Headers to send for all API requests
+ * @property {Function} [fetch] Fetch implementation used for API requests instead of undici's,
+ * called with `(url, { method, headers, body, signal })` and resolving to a `Response`
  * @property {string} [scheduledEvent='https://discord.com/events'] Base URL of guild scheduled events
  */
 

@@ -21,7 +21,7 @@ class RESTManager {
     this.globalReset = null;
     this.globalDelay = null;
     this.cookieJar = new CookieJar();
-    this.fetch = makeFetchCookie.default(fetchOriginal, this.cookieJar);
+    this.fetch = client.options.http.fetch ?? makeFetchCookie.default(fetchOriginal, this.cookieJar);
     if (client.options.restSweepInterval > 0) {
       this.sweepInterval = setInterval(() => {
         this.handlers.sweep(handler => handler._inactive);

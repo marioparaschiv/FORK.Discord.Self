@@ -69,7 +69,7 @@ import {
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
-import { Response, ProxyAgent } from 'undici';
+import { FormData, Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
 import { authenticator } from 'otplib';
@@ -7153,7 +7153,15 @@ export interface HTTPOptions {
   invite?: string;
   template?: string;
   headers?: Record<string, string>;
+  fetch?: (url: string, init: HTTPFetchInit) => Promise<globalThis.Response>;
   scheduledEvent?: string;
+}
+
+export interface HTTPFetchInit {
+  method: string;
+  headers: Record<string, string>;
+  body?: string | FormData;
+  signal: AbortSignal;
 }
 
 export interface ImageURLOptions extends Omit<StaticImageURLOptions, 'format'> {
