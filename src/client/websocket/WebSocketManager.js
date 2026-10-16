@@ -126,6 +126,7 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   async connect() {
+    this.destroyed = false;
     let gatewayURL = 'wss://gateway.discord.gg';
     await this.client.api.gateway
       .get({ auth: false })
