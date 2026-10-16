@@ -785,10 +785,10 @@ class WebSocketShard extends EventEmitter {
         delete client.options.ws.properties[k];
       });
 
-    // Clone the identify payload and assign the token and shard info
+    // Clone the identify payload and assign the token and shard info; the client sends the token first
     const d = {
-      ...client.options.ws,
       token: client.token,
+      ...client.options.ws,
     };
 
     delete d.version;
